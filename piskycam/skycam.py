@@ -40,9 +40,10 @@ class StorageCreator(object):
 
     def get_storage(self):
         """Get a storage object."""
-        if dt.datetime.utcnow() < self._end_time:
-            return YUVStorage(self._camera, self._queue, self._start_time)
-        raise StopIteration
+        while True:
+            yield YUVStorage(self._camera, self._queue, self._start_time)
+            if dt.datetime.utcnow() < self._end_time:
+                break
 
 
 class Stacks(object):
