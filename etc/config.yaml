@@ -2,7 +2,13 @@
 start_delay: 10
 
 # Imaging resolution
-resolution: (1280, 720)
+resolution: (2592, 1944)
+
+# ISO sensitivity
+iso: 800
+
+# Whitebalance setting
+awb_mode: 'sunlight'
 
 # Time format used in the filename
 time_format: "%Y%m%d_%H%M%S.%f"

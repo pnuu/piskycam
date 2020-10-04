@@ -147,8 +147,9 @@ class SkyCam(object):
         """Create the camera instance."""
         self.camera = PiCamera(
             resolution=self._config.get('resolution'),
-            use_video_port=True
             )
+        self.camera.iso = self._config.get('iso', 0)
+        self.camera.awb_mode = self._config.get('awb_mode', 'auto')
 
     def _get_end_time(self):
         """Get end time of the imaging period."""
@@ -156,4 +157,8 @@ class SkyCam(object):
 
     def run(self):
         """Run the camera."""
-        self._camera.capture_sequence(self._storage.get_storage(), format='yuv')
+        self._camera.capture_sequence(
+            self._storage.get_storage(),
+            format='yuv',
+            use_video_port=True
+        )
