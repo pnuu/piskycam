@@ -119,7 +119,7 @@ class Stacks(object):
         self._clear()
 
     def _get_file_path(self):
-        save_dir = self._config["save_dir"]
+        save_dir = self._config.get("save_dir", ".")
         time_fmt = self._config.get("time_format", "%Y%m%d_%H%M%S.%f")
         fname = self._config["camera_name"] + "_" + dt.datetime.strftime(self._image_times[0], time_fmt) + ".zarr"
         return os.path.join(save_dir, fname)
