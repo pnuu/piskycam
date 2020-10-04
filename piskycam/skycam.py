@@ -85,8 +85,9 @@ class Stacks(object):
         """Run stacking."""
         self._loop = True
         while self._loop:
-            itm = self._queue.get(timeout=1)
-            if itm is None:
+            try:
+                itm = self._queue.get(timeout=1)
+            except queue.Empty:
                 continue
             image_time, data = itm
             if self._sum is None:
