@@ -2,7 +2,7 @@
 start_delay: 10
 
 # Imaging resolution
-resolution: (2592, 1944)
+resolution: 2592x1944
 
 # ISO sensitivity
 iso: 800

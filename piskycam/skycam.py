@@ -150,11 +150,12 @@ class SkyCam(object):
 
     def _create_camera(self):
         """Create the camera instance."""
-        self.camera = PiCamera(
+        self._camera = PiCamera(
             resolution=self._config.get('resolution'),
+            framerate=1./self._config['exposure_time'],
             )
-        self.camera.iso = self._config.get('iso', 0)
-        self.camera.awb_mode = self._config.get('awb_mode', 'auto')
+        self._camera.iso = self._config.get('iso', 0)
+        self._camera.awb_mode = self._config.get('awb_mode', 'auto')
 
     def _get_end_time(self):
         """Get end time of the imaging period."""
@@ -173,6 +174,7 @@ class SkyCam(object):
         )
         self._stacks.stop()
         self._stack_thread.join()
+        self._camera.close()
 
 
 def sun_elevation_now(lat, lon):
