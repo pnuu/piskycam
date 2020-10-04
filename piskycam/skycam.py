@@ -47,10 +47,11 @@ class StorageCreator(object):
 class Stacks(Thread):
     """Class for managing image stacking."""
 
-    def __init__(self, config, queue):
+    def __init__(self, config, queue, exposure_time):
         """Initialize stacks."""
         self._config = config
         self._queue = queue
+        self._exposure_time = exposure_time
         self._sum = None
         self._count = None
         self._max = None
@@ -107,6 +108,7 @@ class Stacks(Thread):
             fid["max_time_reference"] = self._max_time_reference
             fid["sum"] = self._sum
             fid["count"] = self._count
+            fid["exposure_time"] = self._exposure_time
         self._clear()
 
     def _get_file_path(self):
@@ -135,7 +137,7 @@ class SkyCam(object):
         start_time = dt.datetime.utcnow() + dt.timedelta(seconds=self._config.get('start_delay', 0))
         end_time = self._get_end_time()
         self._storage = StorageCreator(self._config, self._queue, start_time, end_time)
-        self._stacks = Stacks(self._config, self._queue)
+        self._stacks = Stacks(self._config, self._queue, 1. / self._camera.framerate)
 
     def _create_camera(self):
         """Create the camera instance."""
