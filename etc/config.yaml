@@ -15,3 +15,16 @@ time_format: "%Y%m%d_%H%M%S.%f"
 
 # Length of each stacking period, in seconds
 stack_length: 120
+
+# Location of the camera
+latitude: 60.0
+longitude: 25.0
+
+# Maximum Sun elevation for imaging
+sun_elevation_limit: -3.0
+
+# Name of the camera/station
+camera_name: test
+
+# Directory path to save the data to
+save_dir: /home/pi/images
