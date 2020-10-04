@@ -4,6 +4,9 @@ start_delay: 10
 # Imaging resolution
 resolution: 2592x1944
 
+# Exposure time
+exposure_time: 5.0
+
 # ISO sensitivity
 iso: 800
 
