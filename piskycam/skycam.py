@@ -5,6 +5,7 @@ import datetime as dt
 
 import numpy as np
 import zarr
+import ephem
 
 from picamera import PiCamera
 from picamera.array import PiYUVArray
@@ -162,3 +163,16 @@ class SkyCam(object):
             format='yuv',
             use_video_port=True
         )
+
+
+def sun_elevation_now(lat, lon):
+    """Calculate Sun elevation now at (*lat*, *lon*)."""
+    place = ephem.Observer()
+    place.lat = '%f' % lat
+    place.lon = '%f' % lon
+    place.date = dt.datetime.utcnow()
+
+    sun = ephem.Sun()
+    sun.compute(place)
+
+    return np.degrees(sun.alt)
