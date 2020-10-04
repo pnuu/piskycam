@@ -1,39 +1,46 @@
 import queue
 from threading import Thread
 import os
+import datetime as dt
+
+import numpy as np
+import zarr
 
 from picamera import PiCamera
 from picamera.array import PiYUVArray
-import numpy as np
 
 
 class YUVStorage(PiYUVArray):
     """Storage for image data."""
 
-    def __init__(self, camera, queue):
+    def __init__(self, camera, queue, start_time):
         """Initialize storage."""
         self._queue = queue
         self._time = dt.datetime.utcnow()
+        self._start_time = start_time
         super(YUVStorage, self).__init__(camera)
 
     def flush(self):
         """Flush the stream by putting the data to the queue."""
-        self.queue.put((self._time, self.array.copy()))
+        if dt.datetime.utcnow() > self._start_time:
+            self.queue.put((self._time, self.array.copy()))
+        self.truncate(0)
 
 
 class StorageCreator(object):
     """Create storage items until *end_time* is reached."""
 
-    def __init__(self, camera, queue, end_time):
+    def __init__(self, camera, queue, start_time, end_time):
         """Initialize storage creator."""
         self._camera = camera
         self._queue = queue
+        self._start_time = start_time
         self._end_time = end_time
 
     def get_storage(self):
         """Get a storage object."""
         if dt.datetime.utcnow() < self._end_time:
-            return YUVStorage(self._camera, self._queue)
+            return YUVStorage(self._camera, self._queue, self._start_time)
         raise StopIteration
 
 
@@ -42,6 +49,7 @@ class Stacks(Thread):
 
     def __init__(self, config, queue):
         """Initialize stacks."""
+        self._config = config
         self._queue = queue
         self._sum = None
         self._count = None
@@ -55,7 +63,7 @@ class Stacks(Thread):
         self._sum = data.astype(np.uint32)
         self._count = 1
         self._max = data
-        self._max_time_reference = np.zeros(data.shape[:2], dtype=uint16)
+        self._max_time_reference = np.zeros(data.shape[:2], dtype=np.uint16)
 
     def _update_sum(self, data):
         self._sum += data
@@ -104,7 +112,7 @@ class Stacks(Thread):
     def _get_file_path(self):
         save_dir = self._config["save_dir"]
         time_fmt = self._config.get("time_format", "%Y%m%d_%H%M%S.%f")
-        fname = self._config["camera_name"] + "_" + dt.datetime.strftime(self._image_times[0], time_fmt) ".zarr"
+        fname = self._config["camera_name"] + "_" + dt.datetime.strftime(self._image_times[0], time_fmt) + ".zarr"
         return os.path.join(save_dir, fname)
 
     def _clear(self):
@@ -118,12 +126,15 @@ class Stacks(Thread):
 class SkyCam(object):
     """Sky Camera."""
 
-    def __init__(self):
+    def __init__(self, config):
         """Initialize the camera."""
-        self._config = None
+        self._config = config
         self._camera = None
-        self._queue = Queue.queue()
-        self._storage = YUVStorage(self._config, queue)
+        self._queue = queue.Queue()
+        self._create_camera()
+        start_time = dt.datetime.utcnow() + dt.timedelta(seconds=self._config.get('start_delay', 0))
+        end_time = self._get_end_time()
+        self._storage = StorageCreator(self._config, self._queue, start_time, end_time)
         self._stacks = Stacks(self._config, self._queue)
 
     def _create_camera(self):
@@ -133,13 +144,10 @@ class SkyCam(object):
             use_video_port=True
             )
 
+    def _get_end_time(self):
+        """Get end time of the imaging period."""
+        return dt.datetime.utcnow() + dt.timedelta(minutes=60*6)
+
     def run(self):
         """Run the camera."""
-        start_time = dt.datetime.utcnow() + dt.timedelta(seconds=self._config.get('start_delay', 0))
-
-            image_start_time = dt.datetime.utcnow()
-            for _ in cam.capture_continuous(self._storage, format='yuv'):
-                if dt.datetime.utcnow() > start_time:
-                    self._queue.put((image_start_time, output.array.copy()))
-                    output.truncate(0)
-                image_start_time = dt.datetime.utcnow()
+        self._camera.capture_sequence(self._storage.get_storage(), format='yuv')
