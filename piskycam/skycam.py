@@ -45,7 +45,7 @@ class StorageCreator(object):
         raise StopIteration
 
 
-class Stacks(Thread):
+class Stacks(object):
     """Class for managing image stacking."""
 
     def __init__(self, config, queue, exposure_time):
@@ -60,7 +60,6 @@ class Stacks(Thread):
         self._image_times = []
         self._stack_until = None
         self._loop = False
-        self.start()
 
     def _init_stacks(self, image_time, data):
         self._stack_until = image_time + self._config.get('stack_length', )
@@ -106,6 +105,9 @@ class Stacks(Thread):
 
     def save(self):
         """Save the stacks."""
+        if self._max is None:
+            return
+
         file_path = self._get_file_path()
         with zarr.open(file_path, "w") as fid:
             fid["image_times"] = np.array(self._image_times)
@@ -143,6 +145,8 @@ class SkyCam(object):
         end_time = self._get_end_time()
         self._storage = StorageCreator(self._config, self._queue, start_time, end_time)
         self._stacks = Stacks(self._config, self._queue, 1. / self._camera.framerate)
+        self._stack_thread = Thread(target=self._stacks.run, daemon=True)
+        self._stack_thread.start()
 
     def _create_camera(self):
         """Create the camera instance."""
@@ -163,6 +167,8 @@ class SkyCam(object):
             format='yuv',
             use_video_port=True
         )
+        self._stacks.stop()
+        self._stack_thread.join()
 
 
 def sun_elevation_now(lat, lon):
