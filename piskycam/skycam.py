@@ -158,7 +158,11 @@ class SkyCam(object):
 
     def _get_end_time(self):
         """Get end time of the imaging period."""
-        return dt.datetime.utcnow() + dt.timedelta(minutes=60*6)
+        return next_sun_above_horizon(
+            self._config['latitude'],
+            self._config['longitude'],
+            horizon=self._config.get('sun_elevation_limit', 0.0)
+        )
 
     def run(self):
         """Run the camera."""
@@ -173,12 +177,23 @@ class SkyCam(object):
 
 def sun_elevation_now(lat, lon):
     """Calculate Sun elevation now at (*lat*, *lon*)."""
-    place = ephem.Observer()
-    place.lat = '%f' % lat
-    place.lon = '%f' % lon
-    place.date = dt.datetime.utcnow()
-
+    place = _get_observer(lat, lon)
     sun = ephem.Sun()
     sun.compute(place)
 
     return np.degrees(sun.alt)
+
+
+def _get_observer(lat, lon, horizon=0.0):
+    place = ephem.Observer()
+    place.lat = '%f' % lat
+    place.lon = '%f' % lon
+    place.horizon = '%f' % horizon
+
+    return place
+
+
+def next_sun_above_horizon(lat, lon, horizon=0.0):
+    """Calculate the time of the next Sunrise."""
+    place = _get_observer(lat, lon, horizon=horizon)
+    return place.next_rising(ephem.Sun()).datetime()
