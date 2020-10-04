@@ -1,0 +1,11 @@
+# Optionally delay the start of image gathering by 10 seconds
+start_delay: 10
+
+# Imaging resolution
+resolution: (1280, 720)
+
+# Time format used in the filename
+time_format: "%Y%m%d_%H%M%S.%f"
+
+# Length of each stacking period, in seconds
+stack_length: 120

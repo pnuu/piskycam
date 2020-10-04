@@ -57,10 +57,12 @@ class Stacks(Thread):
         self._max = None
         self._max_time_reference = None
         self._image_times = []
+        self._stack_until = None
         self._loop = False
         self.start()
 
-    def _init_stacks(self, data):
+    def _init_stacks(self, image_time, data):
+        self._stack_until = image_time + self._config.get('stack_length', )
         self._sum = data.astype(np.uint32)
         self._count = 1
         self._max = data
@@ -87,12 +89,14 @@ class Stacks(Thread):
                 continue
             image_time, data = itm
             if self._sum is None:
-                self._init_stacks(data)
+                self._init_stacks(image_time, data)
             else:
                 self._update_sum(data)
                 self._update_count()
                 self._update_max_and_time_reference(data)
             self._image_times.append(np.datetime64(image_time))
+            if image_time >= self._stack_until:
+                self.save()
 
     def stop(self):
         """Stop the stacking thread."""
