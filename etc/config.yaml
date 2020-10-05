@@ -48,7 +48,7 @@ log_config:
       class: logging.handlers.TimedRotatingFileHandler
       level: INFO
       formatter: fmt
-      filename: /home/pi/logs/posttroll_adder.log
+      filename: /home/pi/logs/piskycam.log
       when: midnight
       interval: 1
       backupCount: 10
