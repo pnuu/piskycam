@@ -3,6 +3,7 @@
 import sys
 import datetime as dt
 import logging
+import logging.config
 
 import yaml
 
