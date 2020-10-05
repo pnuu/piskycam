@@ -2,6 +2,7 @@
 
 import sys
 import datetime as dt
+import logging
 
 import yaml
 
@@ -26,6 +27,9 @@ def sun_is_down(lat, lon, elevation_limit):
 def main():
     """Run SkyCam."""
     config = read_config(sys.argv[1])
+    if "log_config" in config:
+        logging.config.dictConfig(config["log_config"])
+
     if sun_is_down(config['latitude'], config['longitude'], config.get('sun_elevation_limit', 0.0)):
         skycam = SkyCam(config)
         skycam.run()

@@ -2,6 +2,7 @@ import queue
 from threading import Thread
 import os
 import datetime as dt
+import logging
 
 import numpy as np
 import zarr
@@ -9,6 +10,8 @@ import ephem
 
 from picamera import PiCamera
 from picamera.array import PiYUVArray
+
+logger = logging.getLogger(__name__)
 
 
 class YUVStorage(PiYUVArray):
@@ -36,12 +39,12 @@ class StorageCreator(object):
         self._camera = camera
         self._queue = queue
         self._start_time = start_time
-        self._end_time = end_time
+        self.end_time = end_time
 
     def get_storage(self):
         """Get a storage object."""
         while True:
-            if dt.datetime.utcnow() >= self._end_time:
+            if dt.datetime.utcnow() >= self.end_time:
                 break
             yield YUVStorage(self._camera, self._queue, self._start_time)
 
@@ -83,6 +86,7 @@ class Stacks(object):
 
     def run(self):
         """Run stacking."""
+        logger.info("Stacker started")
         self._loop = True
         while self._loop:
             try:
@@ -97,20 +101,24 @@ class Stacks(object):
                 self._update_count()
                 self._update_max_and_time_reference(data)
             self._image_times.append(np.datetime64(image_time))
+            logger.debug("Stacks updated.")
             if image_time >= self._stack_until:
                 self.save()
 
     def stop(self):
         """Stop the stacking thread."""
+        logger.info("Stopping stacker")
         self._loop = False
         self.save()
 
     def save(self):
         """Save the stacks."""
         if self._max is None:
+            logger.info("Nothing to save")
             return
 
         file_path = self._get_file_path()
+        logger.info("Saving stacks to %s", file_path)
         with zarr.open(file_path, "w") as fid:
             fid["image_times"] = np.array(self._image_times)
             fid["max"] = self._max
@@ -169,6 +177,8 @@ class SkyCam(object):
 
     def run(self):
         """Run the camera."""
+        logger.info("Starting imaging")
+        logger.info("Running until %s", str(self._storage.end_time))
         self._camera.capture_sequence(
             self._storage.get_storage(),
             format='yuv',
@@ -177,6 +187,7 @@ class SkyCam(object):
         self._stacks.stop()
         self._stack_thread.join()
         self._camera.close()
+        logger.info("Imaging ended")
 
 
 def sun_elevation_now(lat, lon):

@@ -31,3 +31,41 @@ camera_name: test
 
 # Directory path to save the data to
 save_dir: /home/pi/images
+
+# Configuration for logging
+log_config:
+  version: 1
+  formatters:
+    fmt:
+      format: '[%(asctime)s %(levelname)-8s %(name)s] %(message)s'
+  handlers:
+    console:
+      class: logging.StreamHandler
+      level: INFO
+      formatter: fmt
+      stream: ext://sys.stdout
+    file:
+      class: logging.handlers.TimedRotatingFileHandler
+      level: INFO
+      formatter: fmt
+      filename: /home/pi/logs/posttroll_adder.log
+      when: midnight
+      interval: 1
+      backupCount: 10
+  root:
+    level: INFO
+    propagate: false
+    handlers: [console, file]
+  loggers:
+    '':
+      level: INFO
+      handlers: [console, file]
+      propagate: false
+    'piskycam':
+      level: INFO
+      handlers: [console, file]
+      propagate: false
+    'piskycam.skycam':
+      level: INFO
+      handlers: [console, file]
+      propagate: false
