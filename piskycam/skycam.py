@@ -27,7 +27,8 @@ class YUVStorage(PiYUVArray):
     def flush(self):
         """Flush the stream by putting the data to the queue."""
         if dt.datetime.utcnow() > self._start_time:
-            self.queue.put((self._time, self.array.copy()))
+            logger.debug("Adding data to queue")
+            self._queue.put((self._time, self.array.copy()))
         self.truncate(0)
 
 
