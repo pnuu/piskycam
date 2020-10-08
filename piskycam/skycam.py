@@ -155,7 +155,7 @@ class SkyCam(object):
         self._create_camera()
         start_time = dt.datetime.utcnow() + dt.timedelta(seconds=self._config.get('start_delay', 0))
         end_time = self._get_end_time()
-        self._storage = StorageCreator(self._config, self._queue, start_time, end_time)
+        self._storage = StorageCreator(self._camera, self._queue, start_time, end_time)
         self._stacks = Stacks(self._config, self._queue, 1. / self._camera.framerate)
         self._stack_thread = Thread(target=self._stacks.run, daemon=True)
         self._stack_thread.start()
