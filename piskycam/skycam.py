@@ -32,7 +32,6 @@ class YUVStorage(PiYUVArray):
             logger.debug("Adding data to queue")
             image_time = dt.datetime.utcnow() - dt.timedelta(seconds=self._exposure_time)
             self._queue.put((image_time, self.array.copy()))
-        self.truncate(0)
 
 
 class StorageCreator(object):
