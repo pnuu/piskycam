@@ -137,7 +137,13 @@ class Stacks(object):
             if self._collect_sum:
                 fid["sum"] = self._sum
             fid["count"] = self._count
+            # Add some metadata
             fid["exposure_time"] = self._exposure_time
+            fid["latitude"] = self._config["latitude"]
+            fid["longitude"] = self._config["longitude"]
+            fid["iso_value"] = self._config.get("iso", 0)
+            fid["awb_mode"] = self._config.get("awb_mode", "auto")
+            fid["camera_name"] = self._config["camera_name"]
         self._clear()
 
     def _get_file_path(self):
