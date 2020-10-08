@@ -67,12 +67,18 @@ class Stacks(object):
         self._max_time_reference = None
         self._image_times = []
         self._stack_until = None
+        self._collect_sum = self._config.get('collect_sum', False)
         self._loop = False
 
     def _init_stacks(self, image_time, data):
+        stack_length = self._config.get('stack_length', DEFAULT_STACK_LENGTH)
         self._stack_until = image_time + dt.timedelta(
-            seconds=self._config.get('stack_length', DEFAULT_STACK_LENGTH))
-        self._sum = data.astype(np.uint32)
+            seconds=stack_length)
+        if self._collect_sum:
+            if float(stack_length) / self._exposure_time < 256:
+                self._sum = data.astype(np.uint16)
+            else:
+                self._sum = data.astype(np.uint32)
         self._count = 1
         self._max = data
         self._max_time_reference = np.zeros(data.shape[:2], dtype=np.uint16)
@@ -102,7 +108,8 @@ class Stacks(object):
             if self._sum is None:
                 self._init_stacks(image_time, data)
             else:
-                self._update_sum(data)
+                if self._collect_sum:
+                    self._update_sum(data)
                 self._update_count()
                 self._update_max_and_time_reference(data)
             self._image_times.append(np.datetime64(image_time))
@@ -128,7 +135,8 @@ class Stacks(object):
             fid["image_times"] = np.array(self._image_times)
             fid["max"] = self._max
             fid["max_time_reference"] = self._max_time_reference
-            fid["sum"] = self._sum
+            if self._collect_sum:
+                fid["sum"] = self._sum
             fid["count"] = self._count
             fid["exposure_time"] = self._exposure_time
         self._clear()

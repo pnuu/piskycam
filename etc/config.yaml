@@ -32,6 +32,9 @@ camera_name: test
 # Directory path to save the data to
 save_dir: /home/pi/images
 
+# Collect sum of the images.  Default: False
+# collect_sum: True
+
 # Configuration for logging
 log_config:
   version: 1
