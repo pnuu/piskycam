@@ -104,7 +104,7 @@ class Stacks(object):
             except queue.Empty:
                 continue
             image_time, data = itm
-            if self._sum is None:
+            if self._max is None:
                 self._init_stacks(image_time, data)
             else:
                 if self._collect_sum:
