@@ -12,6 +12,7 @@ from picamera import PiCamera
 from picamera.array import PiYUVArray
 
 logger = logging.getLogger(__name__)
+DEFAULT_STACK_LENGTH = 60.0
 
 
 class YUVStorage(PiYUVArray):
@@ -68,7 +69,8 @@ class Stacks(object):
         self._loop = False
 
     def _init_stacks(self, image_time, data):
-        self._stack_until = image_time + self._config.get('stack_length', )
+        self._stack_until = image_time + dt.timedelta(
+            seconds=self._config.get('stack_length', DEFAULT_STACK_LENGTH))
         self._sum = data.astype(np.uint32)
         self._count = 1
         self._max = data
