@@ -21,8 +21,8 @@ class YUVStorage(PiYUVArray):
     def __init__(self, camera, queue, start_time):
         """Initialize storage."""
         self._queue = queue
-        self._time = dt.datetime.utcnow()
         self._start_time = start_time
+        self._exposure_time = 1. / camera.framerate
         super(YUVStorage, self).__init__(camera)
 
     def flush(self):
@@ -30,7 +30,8 @@ class YUVStorage(PiYUVArray):
         super(YUVStorage, self).flush()
         if dt.datetime.utcnow() > self._start_time:
             logger.debug("Adding data to queue")
-            self._queue.put((self._time, self.array.copy()))
+            image_time = dt.datetime.utcnow() - dt.timedelta(seconds=self._exposure_time)
+            self._queue.put((image_time, self.array.copy()))
         self.truncate(0)
 
 
@@ -135,7 +136,8 @@ class Stacks(object):
     def _get_file_path(self):
         save_dir = self._config.get("save_dir", ".")
         time_fmt = self._config.get("time_format", "%Y%m%d_%H%M%S.%f")
-        fname = self._config["camera_name"] + "_" + dt.datetime.strftime(self._image_times[0], time_fmt) + ".zarr"
+        time_str = dt.datetime.strftime(self._image_times[0].astype(dt.datetime), time_fmt)
+        fname = self._config["camera_name"] + "_" + time_str + ".zarr"
         return os.path.join(save_dir, fname)
 
     def _clear(self):
