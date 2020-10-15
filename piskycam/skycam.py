@@ -81,7 +81,7 @@ class Stacks(object):
                 self._sum = data.astype(np.uint32)
         self._count = 1
         self._max = data
-        if self._collect_pixe_times:
+        if self._collect_pixel_times:
             self._max_time_reference = np.zeros(data.shape[:2], dtype=np.uint16)
 
     def _update_sum(self, data):
