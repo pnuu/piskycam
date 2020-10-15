@@ -67,6 +67,7 @@ class Stacks(object):
         self._image_times = []
         self._stack_until = None
         self._collect_sum = self._config.get('collect_sum', False)
+        self._collect_pixel_times = self._config.get('collect_times', False)
         self._loop = False
 
     def _init_stacks(self, image_time, data):
@@ -80,7 +81,8 @@ class Stacks(object):
                 self._sum = data.astype(np.uint32)
         self._count = 1
         self._max = data
-        self._max_time_reference = np.zeros(data.shape[:2], dtype=np.uint16)
+        if self._collect_pixe_times:
+            self._max_time_reference = np.zeros(data.shape[:2], dtype=np.uint16)
 
     def _update_sum(self, data):
         self._sum += data
@@ -92,7 +94,8 @@ class Stacks(object):
         y_idxs, x_idxs = np.where(data[:, :, 0] > self._max[:, :, 0])
         for i in range(3):
             self._max[y_idxs, x_idxs, i] = data[y_idxs, x_idxs, i]
-        self._max_time_reference[y_idxs, x_idxs] = len(self._image_times)
+        if self._collect_pixel_times:
+            self._max_time_reference[y_idxs, x_idxs] = len(self._image_times)
 
     def run(self):
         """Run stacking."""
@@ -133,7 +136,8 @@ class Stacks(object):
         with zarr.open(file_path, "w") as fid:
             fid["image_times"] = np.array(self._image_times)
             fid["max"] = self._max
-            fid["max_time_reference"] = self._max_time_reference
+            if self._collect_pixel_times:
+                fid["max_time_reference"] = self._max_time_reference
             if self._collect_sum:
                 fid["sum"] = self._sum
             fid["count"] = self._count

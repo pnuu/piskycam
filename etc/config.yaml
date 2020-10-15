@@ -35,6 +35,9 @@ save_dir: /home/pi/images
 # Collect sum of the images.  Default: False
 # collect_sum: True
 
+# Collect per-pixel times.  Default: False
+# collect_pixel_times: True
+
 # Configuration for logging
 log_config:
   version: 1
