@@ -168,11 +168,11 @@ class Stacks(object):
     def save_img(self, fname):
         """Save images."""
         parts = os.path.splitext(fname)
-        if self._max:
+        if self._max is not None:
             fname = parts[0] + "_max" + parts[-1]
             logger.info("Saving peak-hold stack to %s", file_path)
             self.save_max(fname, self._max)
-        if self._sum:
+        if self._sum is not None:
             fname = parts[0] + "_ave" + parts[-1]
             logger.info("Saving average stack to %s", file_path)
             self.save_ave(fname, self._sum, self._count)
