@@ -203,14 +203,16 @@ class SkyCam(object):
         """Run the camera."""
         logger.info("Starting imaging")
         logger.info("Running until %s", str(self._storage.end_time))
-        self._camera.capture_sequence(
-            self._storage.get_storage(),
-            format='yuv',
-            use_video_port=True
-        )
-        self._stacks.stop()
-        self._stack_thread.join()
-        self._camera.close()
+        try:
+            self._camera.capture_sequence(
+                self._storage.get_storage(),
+                format='yuv',
+                use_video_port=True
+            )
+        finally:
+            self._stacks.stop()
+            self._stack_thread.join()
+            self._camera.close()
         logger.info("Imaging ended")
 
 
