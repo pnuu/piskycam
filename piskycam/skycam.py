@@ -12,6 +12,7 @@ import ephem
 from picamera import PiCamera
 from picamera.exc import PiCameraValueError
 from picamera.array import PiYUVArray
+from picamera.image import save_ave, save_max
 
 logger = logging.getLogger(__name__)
 DEFAULT_STACK_LENGTH = 60.0
@@ -170,12 +171,12 @@ class Stacks(object):
         parts = os.path.splitext(fname)
         if self._max is not None:
             fname = parts[0] + "_max" + parts[-1]
-            logger.info("Saving peak-hold stack to %s", file_path)
-            self.save_max(fname, self._max)
+            logger.info("Saving peak-hold stack to %s", fname)
+            save_max(fname, self._max)
         if self._sum is not None:
             fname = parts[0] + "_ave" + parts[-1]
-            logger.info("Saving average stack to %s", file_path)
-            self.save_ave(fname, self._sum, self._count)
+            logger.info("Saving average stack to %s", fname)
+            save_ave(fname, self._sum, self._count)
 
     def _get_file_paths(self):
         file_paths = []
