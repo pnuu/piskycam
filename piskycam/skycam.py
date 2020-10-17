@@ -138,7 +138,6 @@ class Stacks(object):
             logger.info("Nothing to save")
             return
 
-        logger.info("Saving stacks to %s", file_path)
         for file_path in self._get_file_paths():
             if file_path.endswith("zarr"):
                 self.save_zarr(file_path)
@@ -149,6 +148,7 @@ class Stacks(object):
     def save_zarr(self, file_path):
         """Save to ZARR."""
         file_path = file_path + ".zarr"
+        logger.info("Saving stacks to %s", file_path)
         with zarr.open(file_path, "w") as fid:
             fid["image_times"] = np.array(self._image_times)
             fid["max"] = self._max
@@ -170,9 +170,11 @@ class Stacks(object):
         parts = os.path.splitext(fname)
         if self._max:
             fname = parts[0] + "_max" + parts[-1]
+            logger.info("Saving peak-hold stack to %s", file_path)
             self.save_max(fname, self._max)
         if self._sum:
             fname = parts[0] + "_ave" + parts[-1]
+            logger.info("Saving average stack to %s", file_path)
             self.save_ave(fname, self._sum, self._count)
 
     def _get_file_paths(self):
