@@ -189,6 +189,7 @@ class SkyCam(object):
             )
         self._camera.iso = self._config.get('iso', 0)
         self._camera.awb_mode = self._config.get('awb_mode', 'auto')
+        self._camera.shutter_speed = int(1e6 * self._config['exposure_time'])
 
     def _get_end_time(self):
         """Get end time of the imaging period."""
