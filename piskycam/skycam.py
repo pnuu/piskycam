@@ -12,7 +12,8 @@ import ephem
 from picamera import PiCamera
 from picamera.exc import PiCameraValueError
 from picamera.array import PiYUVArray
-from picamera.image import save_ave, save_max
+
+from piskycam.image import save_ave, save_max
 
 logger = logging.getLogger(__name__)
 DEFAULT_STACK_LENGTH = 60.0
@@ -156,6 +157,7 @@ class Stacks(object):
             if self._collect_pixel_times:
                 fid["max_time_reference"] = self._max_time_reference
             if self._collect_sum:
+
                 fid["sum"] = self._sum
             fid["count"] = self._count
             # Add some metadata
