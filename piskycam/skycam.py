@@ -165,7 +165,7 @@ class Stacks(object):
             fid["awb_mode"] = self._config.get("awb_mode", "auto")
             fid["camera_name"] = self._config["camera_name"]
 
-    def save_img(self):
+    def save_img(self, fname):
         """Save images."""
         parts = os.path.splitext(fname)
         if self._max:
