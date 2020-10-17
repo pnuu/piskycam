@@ -9,6 +9,7 @@ import zarr
 import ephem
 
 from picamera import PiCamera
+from picamera.exc import PiCameraValueError
 from picamera.array import PiYUVArray
 
 logger = logging.getLogger(__name__)
@@ -69,6 +70,7 @@ class Stacks(object):
         self._collect_sum = self._config.get('collect_sum', False)
         self._collect_pixel_times = self._config.get('collect_times', False)
         self._loop = False
+        self._processing = False
 
     def _init_stacks(self, image_time, data):
         stack_length = self._config.get('stack_length', DEFAULT_STACK_LENGTH)
@@ -106,6 +108,7 @@ class Stacks(object):
                 itm = self._queue.get(timeout=1)
             except queue.Empty:
                 continue
+            self._processing = True
             image_time, data = itm
             if self._max is None:
                 self._init_stacks(image_time, data)
@@ -118,11 +121,14 @@ class Stacks(object):
             logger.debug("Stacks updated.")
             if image_time >= self._stack_until:
                 self.save()
+            self._processing = False
 
     def stop(self):
         """Stop the stacking thread."""
         logger.info("Stopping stacker")
         self._loop = False
+        while self._processing:
+            time.sleep(1)
         self.save()
 
     def save(self):
@@ -209,6 +215,8 @@ class SkyCam(object):
                 format='yuv',
                 use_video_port=True
             )
+        except PiCameraValueError:
+            pass
         finally:
             self._stacks.stop()
             self._stack_thread.join()
