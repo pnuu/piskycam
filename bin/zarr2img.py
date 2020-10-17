@@ -17,10 +17,10 @@ def main():
         parts = os.path.splitext(fname)
         if "max" in fid:
             fname = parts[0] + "_max" + parts[-1]
-            save_max(fid, fname)
+            save_max(fname, fid["max"])
         if "sum" in fid:
             fname = parts[0] + "_ave" + parts[-1]
-            save_ave(fid, fname)
+            save_ave(fname, fid["sum"], fid["count"])
 
 
 if __name__ == "__main__":

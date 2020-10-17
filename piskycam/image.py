@@ -17,15 +17,15 @@ def data2img(data):
     return Image.fromarray(data, 'RGB')
 
 
-def save_max(fid, fname):
+def save_max(fname, max_data):
     """Save max stack."""
-    data = yuv2rgb(fid["max"])
+    data = yuv2rgb(max_data)
     img = data2img(data)
     img.save(fname)
 
 
-def save_ave(fid, fname):
+def save_ave(fname, sum_data, count):
     """Save average stack."""
-    data = yuv2rgb(fid["sum"] / np.array(fid["count"]))
+    data = yuv2rgb(sum_data / np.array(count))
     img = data2img(data)
     img.save(fname)

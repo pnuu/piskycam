@@ -138,8 +138,17 @@ class Stacks(object):
             logger.info("Nothing to save")
             return
 
-        file_path = self._get_file_path()
         logger.info("Saving stacks to %s", file_path)
+        for file_path in self._get_file_paths():
+            if file_path.endswith("zarr"):
+                self.save_zarr(file_path)
+            else:
+                self.save_img(file_path)
+        self._clear()
+
+    def save_zarr(self, file_path):
+        """Save to ZARR."""
+        file_path = file_path + ".zarr"
         with zarr.open(file_path, "w") as fid:
             fid["image_times"] = np.array(self._image_times)
             fid["max"] = self._max
@@ -155,14 +164,26 @@ class Stacks(object):
             fid["iso_value"] = self._config.get("iso", 0)
             fid["awb_mode"] = self._config.get("awb_mode", "auto")
             fid["camera_name"] = self._config["camera_name"]
-        self._clear()
 
-    def _get_file_path(self):
+    def save_img(self):
+        """Save images."""
+        parts = os.path.splitext(fname)
+        if self._max:
+            fname = parts[0] + "_max" + parts[-1]
+            self.save_max(fname, self._max)
+        if self._sum:
+            fname = parts[0] + "_ave" + parts[-1]
+            self.save_ave(fname, self._sum, self._count)
+
+    def _get_file_paths(self):
+        file_paths = []
         save_dir = self._config.get("save_dir", ".")
         time_fmt = self._config.get("time_format", "%Y%m%d_%H%M%S.%f")
         time_str = dt.datetime.strftime(self._image_times[0].astype(dt.datetime), time_fmt)
-        fname = self._config["camera_name"] + "_" + time_str + ".zarr"
-        return os.path.join(save_dir, fname)
+        for fmt in self._config.get("save_formats", ["jpg"]):
+            fname = self._config["camera_name"] + "_" + time_str + "." + fmt
+            file_paths.append(os.path.join(save_dir, fname))
+        return file_paths
 
     def _clear(self):
         self._sum = None
