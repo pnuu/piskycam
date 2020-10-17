@@ -149,7 +149,6 @@ class Stacks(object):
 
     def save_zarr(self, file_path):
         """Save to ZARR."""
-        file_path = file_path + ".zarr"
         logger.info("Saving stacks to %s", file_path)
         with zarr.open(file_path, "w") as fid:
             fid["image_times"] = np.array(self._image_times)
